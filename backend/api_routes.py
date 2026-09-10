@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from typing import List, Optional
 import hmac
 import hashlib
@@ -31,10 +31,11 @@ def list_transactions(status: Optional[str] = Query(None), db: Session = Depends
 
 @router.get("/api/transactions/{transaction_id}", response_model=TransactionResponse)
 def get_transaction(transaction_id: str, db: Session = Depends(get_db)):
-    # Match by transaction_id or string id
-    txn = db.query(Transaction).filter(
-        (Transaction.transaction_id == transaction_id) | (Transaction.id == int(transaction_id) if transaction_id.isdigit() else False)
-    ).first()
+    filters = [Transaction.transaction_id == transaction_id]
+    if transaction_id.isdigit():
+        filters.append(Transaction.id == int(transaction_id))
+
+    txn = db.query(Transaction).filter(or_(*filters)).first()
     if not txn:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return txn
