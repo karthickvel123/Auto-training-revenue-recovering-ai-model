@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoltStore ⚡ Modern Electronics | Powered by Razorpay AI Recovery Agent</title>
+  <!-- Razorpay Standard Checkout Library -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    /* CSS Reset & Dark Mode Theme */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      --bg-color: #080c16;
+      --card-bg: #0f172a;
+      --card-hover: #162038;
+      --border-color: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+    
+    .hidden { display: none !important; }
+    
+    /* Top Competition Bar */
+    .top-banner {
+      background: linear-gradient(90deg, #1e1b4b, #0f2b5c, #2e1065);
+      border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 8px 16px;
+      font-size: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .top-banner-badge {
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 8px;
+    }
+    .top-banner-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .top-banner-link {
+      color: #c7d2fe;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .top-banner-link:hover { color: white; }
+    .key-btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .key-btn:hover { background: #334155; }
+    
+    /* Header / Navbar */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      height: 68px;
+      display: flex;
+      align-items: center;
+    }
+    .header-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand-title span { color: #818cf8; }
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-left: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #34d399;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-btn {
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      transition: opacity 0.2s;
+    }
+    .dashboard-btn:hover { opacity: 0.92; }
+    .cart-btn {
+      background: #1e293b;
+      color: white;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .cart-btn:hover { background: #283548; }
+    .cart-count {
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Main Container */
+    .main {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 48px 20px;
+      flex: 1;
+    }
+
+    /* Hero Banner */
+    .hero {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 36px 32px;
+      margin-bottom: 36px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 32px;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    .hero-title {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .hero-title .gradient-text {
+      background: linear-gradient(90deg, #818cf8, #38bdf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover { background: #283548; }
+
+    /* Pipeline Status Box in Hero */
+    .pipeline-box {
+      background: rgba(10, 15, 30, 0.8);
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .pipeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pipeline-step {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.4);
+      font-size: 11px;
+    }
+    .pipeline-step-name {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pipeline-step-val {
+      font-family: monospace;
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    /* Section Title */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+    }
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+    .product-img-wrap {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: #020617;
+      overflow: hidden;
+    }
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+    .product-card:hover .product-img {
+      transform: scale(1.05);
+    }
+    .product-tag {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(99, 102, 241, 0.9);
+      backdrop-filter: blur(8px);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .product-rating {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .product-body {
+      padding: 18px;
+    }
+    .product-category {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #818cf8;
+      margin-bottom: 4px;
+    }
+    .product-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #f8fafc;
+    }
+    .product-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      height: 36px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .product-footer {
+      padding: 16px 18px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.4);
+    }
+    .product-price {
+      font-size: 18px;
+      font-weight: 800;
+      font-family: monospace;
+      color: white;
+    }
+    .product-orig-price {
+      font-size: 12px;
+      color: #64748b;
+      text-decoration: line-through;
+      margin-left: 4px;
+    }
+    .product-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .add-cart-btn {
+      background: #1e293b;
+      color: white;
+      border: 1px solid #334155;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .add-cart-btn:hover { background: #334155; }
+    .buy-now-btn {
+      background: var(--accent);
+      color: white;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .buy-now-btn:hover { background: var(--accent-hover); }
+
+    /* Cart Drawer / Modal */
+    .cart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .cart-panel {
+      width: 100%;
+      max-width: 440px;
+      background: #0f172a;
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+    .cart-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cart-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .close-btn {
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .close-btn:hover { background: #1e293b; color: white; }
+    .cart-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .cart-item-img {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .cart-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .cart-item-title {
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cart-item-price {
+      font-size: 12px;
+      color: #818cf8;
+      font-family: monospace;
+      font-weight: 600;
+    }
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 2px 4px;
+    }
+    .qty-btn {
+      background: transparent;
+      color: #cbd5e1;
+      width: 20px;
+      height: 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-num {
+      font-size: 12px;
+      font-weight: 700;
+      min-width: 18px;
+      text-align: center;
+    }
+    .cart-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      background: rgba(10, 15, 30, 0.7);
+    }
+    .cart-summary-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .cart-total-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+      border-top: 1px solid var(--border-color);
+      padding-top: 10px;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+    .checkout-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+      margin-bottom: 12px;
+    }
+    .simulate-box {
+      border-top: 1px solid #1e293b;
+      padding-top: 12px;
+    }
+    .simulate-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .simulate-row {
+      display: flex;
+      gap: 8px;
+    }
+    .simulate-select {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      font-size: 11px;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .simulate-btn {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+    .simulate-btn:hover { background: rgba(239, 68, 68, 0.25); }
+
+    /* FLOATING AI RECOVERY BANNER (Key Star Feature) */
+    .recovery-banner {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      max-width: 480px;
+      width: calc(100% - 48px);
+      background: rgba(13, 22, 44, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(99, 102, 241, 0.6);
+      border-radius: 18px;
+      padding: 20px;
+      z-index: 999;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.25);
+      animation: slideUp 0.35s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .recovery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .recovery-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .recovery-sparkle {
+      width: 32px;
+      height: 32px;
+      background: #4f46e5;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .recovery-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .recovery-badge {
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid #6366f1;
+      color: #c7d2fe;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .recovery-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      font-family: monospace;
+      margin-top: 2px;
+    }
+    .recovery-grid {
+      background: rgba(10, 15, 30, 0.85);
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 11px;
+      margin-bottom: 12px;
+    }
+    .recovery-grid-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .recovery-grid-row:last-child { margin-bottom: 0; }
+    .recovery-lbl { color: var(--text-muted); }
+    .recovery-val { font-weight: 700; font-family: monospace; }
+    .recovery-msg {
+      font-size: 12px;
+      color: #e2e8f0;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 8px;
+      padding: 10px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .recovery-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .complete-pay-btn {
+      flex: 1;
+      background: linear-gradient(135deg, #10b981, #0d9488);
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .complete-pay-btn:hover { opacity: 0.95; }
+    .inspect-btn {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .inspect-btn:hover { background: #334155; color: white; }
+
+    /* Generic Modal Dialog */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      max-width: 500px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 12px;
+    }
+    .modal-title { font-size: 16px; font-weight: 800; }
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 4px; display: block; }
+    .form-input {
+      width: 100%;
+      background: #080c16;
+      border: 1px solid #334155;
+      color: white;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .hero { grid-template-columns: 1fr; }
+      .product-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Showcase Banner -->
+  <div class="top-banner">
+    <div>
+      <span class="top-banner-badge">Razorpay AI Builders</span>
+      <span>Autonomous Payment Recovery Agent • Customer Storefront Showcase</span>
+    </div>
+    <div class="top-banner-links">
+      <a href="http://localhost:8501" target="_blank" class="top-banner-link">
+        <span>Open Merchant AI Dashboard</span> ↗
+      </a>
+      <button onclick="openConfigModal()" class="key-btn">
+        🔑 <span id="headerKeyStatus">Checking Keys...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div>
+          <div style="display: flex; align-items: center;">
+            <div class="brand-title">Volt<span>Store</span></div>
+            <div class="brand-badge">
+              <span class="status-dot"></span> Agent Online
+            </div>
+          </div>
+          <div style="font-size: 11px; color: #64748b;">Autonomous Revenue Recovery Integrated</div>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <a href="http://localhost:8501" target="_blank" class="dashboard-btn">
+          📊 <span>Merchant AI Control</span>
+        </a>
+        <button onclick="toggleCart(true)" class="cart-btn">
+          🛒 <span>Cart</span>
+          <span id="cartCountBadge" class="cart-count">1</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div>
+        <div class="hero-pill">
+          🛡️ AI Revenue Recovery Engine Active
+        </div>
+        <h1 class="hero-title">
+          Premium Gear with <br/>
+          <span class="gradient-text">Zero Drop-Off Checkout.</span>
+        </h1>
+        <p class="hero-desc">
+          Experience bulletproof payment resilience. If your bank drops a transaction or card authorization fails, our autonomous AI agent analyzes failure signals, applies 7 fintech safety rules, and recovers your cart in real-time.
+        </p>
+        <div class="hero-actions">
+          <button onclick="quickTestBuy('prod_headphones')" class="btn-primary">
+            ⚡ Quick Test: Buy Headphones (₹2,499)
+          </button>
+          <button onclick="openHowItWorksModal()" class="btn-secondary">
+            ℹ️ How The AI Recovers
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Pipeline Telemetry Card -->
+      <div class="pipeline-box">
+        <div class="pipeline-header">
+          <span>⚡ Live Recovery Pipeline</span>
+          <span style="color: #818cf8;">All 7 Safety Rules Active</span>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-step-name">📨 Webhook Ingestion</span>
+          <span class="pipeline-step-val">HMAC-SHA256 Signed</span>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-step-name">🤖 AI Failure Classifier</span>
+          <span class="pipeline-step-val">&lt; 15ms Latency</span>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-step-name">🛡️ Deterministic Safety Gateway</span>
+          <span class="pipeline-step-val">7 Strict Guardrails</span>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-step-name">🔄 Reinforcement Learning</span>
+          <span class="pipeline-step-val">Adaptive Strategy Weights</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Products Catalog Section -->
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Curated Tech Hardware</h2>
+        <p class="section-subtitle">Click any product to add to cart or test checkout failure & recovery.</p>
+      </div>
+      <div style="font-size: 12px; color: #818cf8; background: rgba(99,102,241,0.15); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(99,102,241,0.3); font-weight: 600;">
+        6 Hardware Items Ready
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="productGrid" class="product-grid">
+      <!-- Injected via JavaScript -->
+    </div>
+  </main>
+
+  <!-- CART DRAWER MODAL -->
+  <div id="cartModal" class="cart-overlay hidden" onclick="handleOverlayClick(event)">
+    <div class="cart-panel" onclick="event.stopPropagation()">
+      <div class="cart-header">
+        <div class="cart-title">
+          🛒 <span>Shopping Cart</span>
+          <span id="cartDrawerCount" style="font-size: 11px; background: #1e293b; padding: 2px 7px; border-radius: 10px; color: #94a3b8;">1</span>
+        </div>
+        <button onclick="toggleCart(false)" class="close-btn">✕</button>
+      </div>
+
+      <div id="cartItemsList" class="cart-body">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-summary-line">
+          <span>Subtotal</span>
+          <span id="cartSubtotal" style="font-family: monospace; color: white;">₹0</span>
+        </div>
+        <div class="cart-summary-line">
+          <span>Shipping</span>
+          <span style="color: #34d399; font-weight: 600;">FREE (Express Air)</span>
+        </div>
+        <div class="cart-total-line">
+          <span>Total</span>
+          <span id="cartTotal" style="color: #818cf8; font-family: monospace; font-size: 18px;">₹0</span>
+        </div>
+
+        <!-- Real Razorpay Checkout -->
+        <button onclick="executeRealCheckout()" class="checkout-btn">
+          💳 Pay with Razorpay Standard Checkout
+        </button>
+
+        <!-- Simulated Failure for Demo -->
+        <div class="simulate-box">
+          <label class="simulate-label">Test Failure & AI Recovery Demo:</label>
+          <div class="simulate-row">
+            <select id="failureReasonSelect" class="simulate-select">
+              <option value="insufficient_funds">insufficient_funds (Temporary)</option>
+              <option value="bank_server_down">bank_server_down (Bank Outage)</option>
+              <option value="card_declined">card_declined (Action Required)</option>
+              <option value="network_timeout">network_timeout (Retryable)</option>
+              <option value="security_violation">security_violation (Rule 1 Block)</option>
+            </select>
+            <button onclick="executeSimulatedFailure()" class="simulate-btn">
+              ⚡ Test Failure
+            </button>
+          </div>
+          <div style="font-size: 10px; color: #64748b; margin-top: 4px;">
+            Triggers failure webhook, AI reasoning, 7 safety checks, and recovery banner.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING AI SMART RECOVERY BANNER -->
+  <div id="aiRecoveryBanner" class="recovery-banner hidden">
+    <div class="recovery-header">
+      <div class="recovery-title-wrap">
+        <div class="recovery-sparkle">✨</div>
+        <div>
+          <div class="recovery-title">
+            <span>Autonomous Recovery Agent</span>
+            <span class="recovery-badge">AI Active</span>
+          </div>
+          <div id="aiSubReason" class="recovery-sub">Order analyzed in 12ms</div>
+        </div>
+      </div>
+      <button onclick="dismissAiBanner()" class="close-btn" style="width:24px; height:24px; font-size:14px;">✕</button>
+    </div>
+
+    <div class="recovery-grid">
+      <div class="recovery-grid-row">
+        <span class="recovery-lbl">Diagnosis:</span>
+        <span id="aiDiagnosisText" class="recovery-val" style="color: #fbbf24;">Analyzing...</span>
+      </div>
+      <div class="recovery-grid-row">
+        <span class="recovery-lbl">Safety Verdict:</span>
+        <span id="aiSafetyVerdict" class="recovery-val" style="color: #34d399;">Checking Rules...</span>
+      </div>
+      <div class="recovery-grid-row">
+        <span class="recovery-lbl">Selected Strategy:</span>
+        <span id="aiStrategyText" class="recovery-val" style="color: #38bdf8;">Evaluating...</span>
+      </div>
+    </div>
+
+    <div id="aiCustomerMessage" class="recovery-msg">
+      "Your order is reserved for the next 15 minutes! Switch payment method to complete purchase in 1-click."
+    </div>
+
+    <div class="recovery-actions">
+      <button id="completeRecoveryBtn" onclick="executeRecoveryPayment()" class="complete-pay-btn">
+        <span id="recoveryBtnText">⚡ Complete Recovery Payment (1-Click)</span>
+      </button>
+      <a href="http://localhost:8501" target="_blank" class="inspect-btn">
+        Trace ↗
+      </a>
+    </div>
+  </div>
+
+  <!-- SUCCESS CELEBRATION MODAL -->
+  <div id="successModal" class="modal-overlay hidden">
+    <div class="modal-card" style="text-align: center; border-color: rgba(16,185,129,0.5);">
+      <div style="font-size: 40px; margin-bottom: 12px;">🎉</div>
+      <h3 class="modal-title" style="font-size: 20px; color: #34d399;">Revenue Recovered!</h3>
+      <p style="font-size: 13px; color: #94a3b8; margin: 8px 0 16px 0;">
+        Payment was successfully restored via the AI agent's adaptive recovery strategy.
+      </p>
+
+      <div style="background: rgba(0,0,0,0.5); border: 1px solid #1e293b; border-radius: 12px; padding: 14px; text-align: left; font-size: 12px; font-family: monospace; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+          <span style="color:#64748b;">Order ID:</span>
+          <span id="successOrderId" style="color:white;">order_...</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+          <span style="color:#64748b;">Recovered Amount:</span>
+          <span id="successAmount" style="color:#34d399; font-weight:700;">₹0</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:#64748b;">Reinforcement Learning:</span>
+          <span style="color:#818cf8; font-weight:700;">Score +1.0 Recorded</span>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <a href="http://localhost:8501" target="_blank" class="dashboard-btn" style="justify-content:center; padding:11px;">
+          View Live Metrics in Merchant Dashboard ↗
+        </a>
+        <button onclick="closeSuccessModal()" class="btn-secondary" style="justify-content:center;">
+          Continue Shopping
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG MODAL -->
+  <div id="configModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">🔑 Razorpay & AI Credentials</div>
+        <button onclick="closeConfigModal()" class="close-btn">✕</button>
+      </div>
+
+      <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); border-radius: 10px; padding: 12px; font-size: 11px; margin-bottom: 16px; line-height: 1.5;">
+        <strong style="color: #a5b4fc;">How to get Razorpay Test Keys in 60s (Free, No KYC):</strong>
+        <ol style="margin-left: 16px; margin-top: 4px; color: #cbd5e1;">
+          <li>Sign up at <a href="https://dashboard.razorpay.com/signup" target="_blank" style="color: #38bdf8; text-decoration: underline;">dashboard.razorpay.com/signup</a></li>
+          <li>Toggle switch in top header to <strong>"Test Mode"</strong></li>
+          <li>Go to <strong>Settings &gt; API Keys &gt; Generate Key</strong></li>
+          <li>Paste the Key ID and Key Secret below!</li>
+        </ol>
+      </div>
+
+      <form onsubmit="handleSaveConfig(event)">
+        <div class="form-group">
+          <label class="form-label">Razorpay Key ID</label>
+          <input type="text" id="cfgKeyId" placeholder="rzp_test_..." class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Razorpay Key Secret</label>
+          <input type="password" id="cfgKeySecret" placeholder="Enter test key secret" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Webhook Secret</label>
+          <input type="text" id="cfgWebhookSecret" placeholder="test_webhook_secret_123" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">OpenAI API Key (Optional)</label>
+          <input type="password" id="cfgOpenAiKey" placeholder="sk-... (deterministic fallback active if empty)" class="form-input">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" onclick="closeConfigModal()" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Credentials</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS MODAL -->
+  <div id="howItWorksModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">⚡ Autonomous Recovery Architecture</div>
+        <button onclick="closeHowItWorksModal()" class="close-btn">✕</button>
+      </div>
+
+      <div style="font-size: 12px; color: #cbd5e1; line-height: 1.6; display: flex; flex-direction: column; gap: 12px;">
+        <div style="background: #1e293b; padding: 10px 14px; border-radius: 8px;">
+          <strong style="color: #818cf8;">1. Webhook Ingestion & Deduplication:</strong>
+          <div>When payment fails, Razorpay fires <code>payment.failed</code>. FastAPI verifies HMAC-SHA256 signature and deduplicates.</div>
+        </div>
+        <div style="background: #1e293b; padding: 10px 14px; border-radius: 8px;">
+          <strong style="color: #38bdf8;">2. Real-time Failure Classification:</strong>
+          <div>Categorizes error into temporary, customer_action, permanent, or security with &lt;15ms fallback reasoning.</div>
+        </div>
+        <div style="background: #1e293b; padding: 10px 14px; border-radius: 8px;">
+          <strong style="color: #fbbf24;">3. 7 Deterministic Fintech Safety Rules:</strong>
+          <div>Hard-coded gates prevent spamming, verify high-value bounds, check max retries (3), and block fraud.</div>
+        </div>
+        <div style="background: #1e293b; padding: 10px 14px; border-radius: 8px;">
+          <strong style="color: #34d399;">4. Adaptive Strategy & Closed Learning Loop:</strong>
+          <div>Dispatches 1-click alternative recovery. Successful recovery reinforces strategy weights.</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button onclick="closeHowItWorksModal()" class="btn-primary">Got it, Let's Test!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP JAVASCRIPT -->
+  <script>
+    // Product Catalog
+    const products = [
+      {
+        id: "prod_headphones",
+        name: "Sony WH-1000XM5 ANC Headphones",
+        price: 2499,
+        pricePaise: 249900,
+        origPrice: 29990,
+        category: "Audio",
+        rating: 4.9,
+        tag: "Best Seller",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80",
+        description: "Industry-leading noise cancellation with dual processors and 8 microphones."
+      },
+      {
+        id: "prod_keyboard",
+        name: "Keychron K2 Pro Wireless Mechanical",
+        price: 4999,
+        pricePaise: 499900,
+        origPrice: 9999,
+        category: "Peripherals",
+        rating: 4.8,
+        tag: "Hot Swap RGB",
+        image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&auto=format&fit=crop&q=80",
+        description: "QMK/VIA wireless custom mechanical keyboard with hot-swappable tactile switches."
+      },
+      {
+        id: "prod_display",
+        name: "Apple Studio Display 27-inch 5K Retina",
+        price: 24999,
+        pricePaise: 2499900,
+        origPrice: 159900,
+        category: "Displays",
+        rating: 4.9,
+        tag: "High Value Flagship",
+        image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&auto=format&fit=crop&q=80",
+        description: "Breathtaking 5K Retina screen. High-value order triggers Rule 4 threshold check."
+      },
+      {
+        id: "prod_mouse",
+        name: "Logitech MX Master 3S Ergonomic Mouse",
+        price: 1499,
+        pricePaise: 149900,
+        origPrice: 9995,
+        category: "Peripherals",
+        rating: 4.9,
+        tag: "Quiet Clicks",
+        image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800&auto=format&fit=crop&q=80",
+        description: "MagSpeed electromagnetic scroll wheel with 8K DPI any-surface glass tracking."
+      },
+      {
+        id: "prod_charger",
+        name: "Anker 65W GaN Fast Charger & Battery",
+        price: 999,
+        pricePaise: 99900,
+        origPrice: 4999,
+        category: "Power",
+        rating: 4.7,
+        tag: "Compact GaN",
+        image: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=800&auto=format&fit=crop&q=80",
+        description: "High-speed 65W dual USB-C Power Delivery in a pocketable foldable plug form factor."
+      },
+      {
+        id: "prod_earbuds",
+        name: "Bose QuietComfort Earbuds II",
+        price: 3499,
+        pricePaise: 349900,
+        origPrice: 24990,
+        category: "Audio",
+        rating: 4.8,
+        tag: "CustomTune",
+        image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80",
+        description: "Personalized noise cancellation and acoustic performance customized to your ear canal."
+      }
+    ];
+
+    // Shopping Cart State
+    let cart = [
+      { product: products[0], quantity: 1 }
+    ];
+
+    let currentActiveOrderId = null;
+    let currentPollingInterval = null;
+
+    // Initialization
+    window.addEventListener("DOMContentLoaded", () => {
+      renderProducts();
+      updateCartUI();
+      checkConfigStatus();
+    });
+
+    // Render Product Cards
+    function renderProducts() {
+      const grid = document.getElementById("productGrid");
+      if (!grid) return;
+      grid.innerHTML = products.map(p => `
+        <div class="product-card">
+          <div>
+            <div class="product-img-wrap">
+              <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
+              <div class="product-tag">${p.tag}</div>
+              <div class="product-rating">★ ${p.rating}</div>
+            </div>
+            <div class="product-body">
+              <div class="product-category">${p.category}</div>
+              <div class="product-name">${p.name}</div>
+              <div class="product-desc">${p.description}</div>
+            </div>
+          </div>
+          <div class="product-footer">
+            <div>
+              <span class="product-price">₹${p.price.toLocaleString('en-IN')}</span>
+              <span class="product-orig-price">₹${p.origPrice.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="product-btns">
+              <button onclick="addToCart('${p.id}')" class="add-cart-btn">+ Add</button>
+              <button onclick="quickTestBuy('${p.id}')" class="buy-now-btn">Buy Now</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // Cart Management
+    function addToCart(productId) {
+      const prod = products.find(p => p.id === productId);
+      const existing = cart.find(c => c.product.id === productId);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ product: prod, quantity: 1 });
+      }
+      updateCartUI();
+      toggleCart(true);
+    }
+
+    function changeQuantity(productId, delta) {
+      const item = cart.find(c => c.product.id === productId);
+      if (!item) return;
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        cart = cart.filter(c => c.product.id !== productId);
+      }
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const count = cart.reduce((sum, i) => sum + i.quantity, 0);
+      const subtotal = cart.reduce((sum, i) => sum + (i.product.price * i.quantity), 0);
+
+      document.getElementById("cartCountBadge").innerText = count;
+      document.getElementById("cartDrawerCount").innerText = count;
+      document.getElementById("cartSubtotal").innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+      document.getElementById("cartTotal").innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+
+      const list = document.getElementById("cartItemsList");
+      if (cart.length === 0) {
+        list.innerHTML = `
+          <div style="padding: 40px 20px; text-align: center; color: #64748b;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🛒</div>
+            <div style="font-size: 14px;">Your cart is empty</div>
+          </div>
+        `;
+      } else {
+        list.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <img src="${item.product.image}" class="cart-item-img">
+            <div class="cart-item-info">
+              <div class="cart-item-title">${item.product.name}</div>
+              <div class="cart-item-price">₹${item.product.price.toLocaleString('en-IN')}</div>
+            </div>
+            <div class="qty-controls">
+              <button onclick="changeQuantity('${item.product.id}', -1)" class="qty-btn">-</button>
+              <span class="qty-num">${item.quantity}</span>
+              <button onclick="changeQuantity('${item.product.id}', 1)" class="qty-btn">+</button>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    function toggleCart(open) {
+      const modal = document.getElementById("cartModal");
+      if (open) modal.classList.remove("hidden");
+      else modal.classList.add("hidden");
+    }
+
+    function handleOverlayClick(e) {
+      toggleCart(false);
+    }
+
+    function quickTestBuy(productId) {
+      const prod = products.find(p => p.id === productId);
+      cart = [{ product: prod, quantity: 1 }];
+      updateCartUI();
+      toggleCart(true);
+    }
+
+    // Checkout: Real Razorpay Modal
+    async function executeRealCheckout() {
+      const subtotalPaise = cart.reduce((sum, i) => sum + (i.product.pricePaise * i.quantity), 0);
+      if (subtotalPaise <= 0) return alert("Cart is empty. Add an item first.");
+
+      try {
+        toggleCart(false);
+        const res = await fetch("http://127.0.0.1:8000/api/create-test-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: subtotalPaise })
+        });
+        const order = await res.json();
+        currentActiveOrderId = order.order_id;
+
+        const options = {
+          key: order.razorpay_key_id,
+          amount: order.amount,
+          currency: order.currency,
+          name: "VoltStore Electronics",
+          description: "Order " + order.order_id,
+          image: "https://cdn-icons-png.flaticon.com/512/3081/3081840.png",
+          order_id: order.order_id,
+          handler: function (response) {
+            showSuccessModal(order.order_id, order.amount / 100);
+          },
+          prefill: {
+            name: "Alex Johnson",
+            email: "alex@example.com",
+            contact: "+919876543210"
+          },
+          theme: { color: "#4f46e5" },
+          modal: {
+            ondismiss: function () {
+              console.log("Modal closed by user.");
+            }
+          }
+        };
+
+        if (window.Razorpay) {
+          const rzp = new Razorpay(options);
+          rzp.on('payment.failed', function (resp) {
+            fetch(`http://127.0.0.1:8000/api/trigger-test-failure?order_id=${order.order_id}&error_reason=${resp.error.reason || 'card_declined'}&amount=${order.amount}`, {
+              method: 'POST'
+            });
+            startPollingSimulation(order.order_id);
+          });
+          rzp.open();
+        } else {
+          alert("Razorpay checkout.js not loaded. Verify connection.");
+        }
+      } catch (err) {
+        console.error("Checkout error:", err);
+        alert("Failed to initialize checkout. Verify backend on http://127.0.0.1:8000.");
+      }
+    }
+
+    // Checkout: Simulate Failure to Demo AI Recovery
+    async function executeSimulatedFailure() {
+      const subtotalPaise = cart.reduce((sum, i) => sum + (i.product.pricePaise * i.quantity), 0);
+      if (subtotalPaise <= 0) return alert("Cart is empty. Add an item first.");
+
+      const reason = document.getElementById("failureReasonSelect").value;
+      toggleCart(false);
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/create-test-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: subtotalPaise })
+        });
+        const order = await res.json();
+        currentActiveOrderId = order.order_id;
+
+        await fetch(`http://127.0.0.1:8000/api/trigger-test-failure?order_id=${order.order_id}&error_reason=${reason}&amount=${order.amount}`, {
+          method: "POST"
+        });
+
+        startPollingSimulation(order.order_id);
+      } catch (err) {
+        console.error("Simulation error:", err);
+        alert("Simulation failed. Verify backend connectivity.");
+      }
+    }
+
+    // Polling Status
+    function startPollingSimulation(orderId) {
+      if (currentPollingInterval) clearInterval(currentPollingInterval);
+      showAiRecoveryBannerLoading(orderId);
+
+      let attempts = 0;
+      currentPollingInterval = setInterval(async () => {
+        attempts++;
+        try {
+          const res = await fetch(`http://127.0.0.1:8000/api/simulation-status/${orderId}`);
+          const data = await res.json();
+
+          if (data.webhook_received) {
+            clearInterval(currentPollingInterval);
+            renderAiRecoveryData(data);
+          } else if (attempts > 20) {
+            clearInterval(currentPollingInterval);
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }, 500);
+    }
+
+    function showAiRecoveryBannerLoading(orderId) {
+      const banner = document.getElementById("aiRecoveryBanner");
+      banner.classList.remove("hidden");
+      document.getElementById("aiSubReason").innerText = `Order #${orderId} • Agent analyzing telemetry...`;
+      document.getElementById("aiDiagnosisText").innerText = "Classifying failure...";
+      document.getElementById("aiSafetyVerdict").innerText = "Checking 7 Safety Rules...";
+      document.getElementById("aiStrategyText").innerText = "Selecting recovery route...";
+      document.getElementById("aiCustomerMessage").innerText = "Analyzing transaction failure telemetry to generate zero-friction recovery...";
+      document.getElementById("completeRecoveryBtn").disabled = true;
+      document.getElementById("recoveryBtnText").innerText = "Preparing Recovery Route...";
+    }
+
+    function renderAiRecoveryData(data) {
+      const banner = document.getElementById("aiRecoveryBanner");
+      banner.classList.remove("hidden");
+
+      const category = (data.ai_classification && data.ai_classification.failure_category) || "temporary_technical_error";
+      const customerMsg = (data.ai_classification && data.ai_classification.customer_message) || "We saved your cart! Complete payment with 1-click.";
+
+      document.getElementById("aiSubReason").innerText = `Order #${data.order_id} • Auto-recovered by Agent`;
+      document.getElementById("aiDiagnosisText").innerText = category.toUpperCase().replace(/_/g, " ");
+      document.getElementById("aiSafetyVerdict").innerHTML = `✓ ${data.safety || 'Allowed (All 7 Rules Pass)'}`;
+      document.getElementById("aiStrategyText").innerText = (data.strategy || "1-Click Alternative Payment").toUpperCase().replace(/_/g, " ");
+      document.getElementById("aiCustomerMessage").innerText = `"${customerMsg}"`;
+
+      const btn = document.getElementById("completeRecoveryBtn");
+      btn.disabled = false;
+      document.getElementById("recoveryBtnText").innerText = "⚡ Complete Recovery Payment (1-Click)";
+    }
+
+    function dismissAiBanner() {
+      document.getElementById("aiRecoveryBanner").classList.add("hidden");
+    }
+
+    // Recovery Payment Execution
+    async function executeRecoveryPayment() {
+      if (!currentActiveOrderId) return;
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/trigger-recovery-success?order_id=${currentActiveOrderId}`, {
+          method: "POST"
+        });
+        const result = await res.json();
+        dismissAiBanner();
+        const subtotal = cart.reduce((sum, i) => sum + (i.product.price * i.quantity), 0);
+        showSuccessModal(currentActiveOrderId, subtotal);
+      } catch (e) {
+        console.error("Recovery completion error:", e);
+        alert("Failed to complete recovery.");
+      }
+    }
+
+    function showSuccessModal(orderId, amount) {
+      document.getElementById("successOrderId").innerText = orderId;
+      document.getElementById("successAmount").innerText = `₹${amount.toLocaleString('en-IN')}`;
+      document.getElementById("successModal").classList.remove("hidden");
+    }
+
+    function closeSuccessModal() {
+      document.getElementById("successModal").classList.add("hidden");
+      cart = [];
+      updateCartUI();
+    }
+
+    // Config Modal Management
+    async function checkConfigStatus() {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/config-status");
+        const status = await res.json();
+        const badge = document.getElementById("headerKeyStatus");
+        if (status.has_razorpay_keys) {
+          badge.innerText = `Razorpay Test: ${status.razorpay_key_id}`;
+          badge.style.color = "#34d399";
+        } else {
+          badge.innerText = "Simulation Mode (Click to Add Keys)";
+          badge.style.color = "#fbbf24";
+        }
+      } catch (e) {
+        console.log("Could not fetch config status");
+      }
+    }
+
+    function openConfigModal() {
+      document.getElementById("configModal").classList.remove("hidden");
+    }
+    function closeConfigModal() {
+      document.getElementById("configModal").classList.add("hidden");
+    }
+
+    async function handleSaveConfig(e) {
+      e.preventDefault();
+      const payload = {
+        razorpay_key_id: document.getElementById("cfgKeyId").value || null,
+        razorpay_key_secret: document.getElementById("cfgKeySecret").value || null,
+        razorpay_webhook_secret: document.getElementById("cfgWebhookSecret").value || null,
+        openai_api_key: document.getElementById("cfgOpenAiKey").value || null
+      };
+      try {
+        await fetch("http://127.0.0.1:8000/api/save-config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        closeConfigModal();
+        checkConfigStatus();
+        alert("Credentials saved! Test mode is updated.");
+      } catch (err) {
+        alert("Failed to save credentials.");
+      }
+    }
+
+    function openHowItWorksModal() {
+      document.getElementById("howItWorksModal").classList.remove("hidden");
+    }
+    function closeHowItWorksModal() {
+      document.getElementById("howItWorksModal").classList.add("hidden");
+    }
+  </script>
+</body>
+</html>
