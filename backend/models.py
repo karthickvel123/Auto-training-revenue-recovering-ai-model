@@ -9,7 +9,7 @@ class Transaction(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     transaction_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-    order_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    order_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
     amount: Mapped[int] = mapped_column(Integer)
     currency: Mapped[str] = mapped_column(String(10), default="INR")
     status: Mapped[str] = mapped_column(String(50))

@@ -1391,7 +1391,7 @@
 
       try {
         toggleCart(false);
-        const res = await fetch("http://127.0.0.1:8000/api/create-test-order", {
+        const res = await fetch("/api/create-test-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount: subtotalPaise })
@@ -1426,7 +1426,7 @@
         if (window.Razorpay) {
           const rzp = new Razorpay(options);
           rzp.on('payment.failed', function (resp) {
-            fetch(`http://127.0.0.1:8000/api/trigger-test-failure?order_id=${order.order_id}&error_reason=${resp.error.reason || 'card_declined'}&amount=${order.amount}`, {
+            fetch(`/api/trigger-test-failure?order_id=${order.order_id}&error_reason=${resp.error.reason || 'card_declined'}&amount=${order.amount}`, {
               method: 'POST'
             });
             startPollingSimulation(order.order_id);
@@ -1437,7 +1437,7 @@
         }
       } catch (err) {
         console.error("Checkout error:", err);
-        alert("Failed to initialize checkout. Verify backend on http://127.0.0.1:8000.");
+        alert("Failed to initialize checkout. Verify backend connectivity.");
       }
     }
 
@@ -1450,7 +1450,7 @@
       toggleCart(false);
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/create-test-order", {
+        const res = await fetch("/api/create-test-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount: subtotalPaise })
@@ -1458,7 +1458,7 @@
         const order = await res.json();
         currentActiveOrderId = order.order_id;
 
-        await fetch(`http://127.0.0.1:8000/api/trigger-test-failure?order_id=${order.order_id}&error_reason=${reason}&amount=${order.amount}`, {
+        await fetch(`/api/trigger-test-failure?order_id=${order.order_id}&error_reason=${reason}&amount=${order.amount}`, {
           method: "POST"
         });
 
@@ -1478,7 +1478,7 @@
       currentPollingInterval = setInterval(async () => {
         attempts++;
         try {
-          const res = await fetch(`http://127.0.0.1:8000/api/simulation-status/${orderId}`);
+          const res = await fetch(`/api/simulation-status/${orderId}`);
           const data = await res.json();
 
           if (data.webhook_received) {
@@ -1531,7 +1531,7 @@
     async function executeRecoveryPayment() {
       if (!currentActiveOrderId) return;
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/trigger-recovery-success?order_id=${currentActiveOrderId}`, {
+        const res = await fetch(`/api/trigger-recovery-success?order_id=${currentActiveOrderId}`, {
           method: "POST"
         });
         const result = await res.json();
@@ -1559,7 +1559,7 @@
     // Config Modal Management
     async function checkConfigStatus() {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/config-status");
+        const res = await fetch("/api/config-status");
         const status = await res.json();
         const badge = document.getElementById("headerKeyStatus");
         if (status.has_razorpay_keys) {
@@ -1590,7 +1590,7 @@
         openai_api_key: document.getElementById("cfgOpenAiKey").value || null
       };
       try {
-        await fetch("http://127.0.0.1:8000/api/save-config", {
+        await fetch("/api/save-config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)

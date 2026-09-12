@@ -4,7 +4,7 @@ from backend.models import Transaction, WebhookEvent, RecoveryAttempt
 from backend.razorpay_client import get_razorpay_client
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -80,25 +80,48 @@ def process_webhook_event(event_id: str, event_type: str, payload: dict):
             if txn:
                 txn.status = "CAPTURED"
             
-            # Check for recovery matching
+            # Check for recovery matching via multiple strategies
             notes = payment_entity.get("notes", {})
             recovered_txn_id = None
             
-            # 1. Notes check
+            # 1. Notes check (primary — notes contain recovery_for)
             for k, v in notes.items():
                 if k.startswith("recovery_for") and v:
                     recovered_txn_id = v
                     break
-                    
-            # 2. Reference ID check (payment link callback matching)
-            # Typically reference_id is part of the payload. If we have the original transaction_id embedded.
             
+            # 2. Payment Link ID check — match via RecoveryAttempt records
+            if not recovered_txn_id:
+                payment_link_id = payment_entity.get("payment_link_id")
+                if payment_link_id:
+                    attempt = db.query(RecoveryAttempt).filter(
+                        RecoveryAttempt.payment_link_id == payment_link_id,
+                        RecoveryAttempt.status == "PENDING"
+                    ).first()
+                    if attempt:
+                        orig_txn = db.query(Transaction).filter(Transaction.id == attempt.transaction_id).first()
+                        if orig_txn:
+                            recovered_txn_id = orig_txn.transaction_id
+
+            # 3. Order ID check — match via recovery_order_id on RecoveryAttempt
+            if not recovered_txn_id:
+                order_id = payment_entity.get("order_id")
+                if order_id:
+                    attempt = db.query(RecoveryAttempt).filter(
+                        RecoveryAttempt.recovery_order_id == order_id,
+                        RecoveryAttempt.status == "PENDING"
+                    ).first()
+                    if attempt:
+                        orig_txn = db.query(Transaction).filter(Transaction.id == attempt.transaction_id).first()
+                        if orig_txn:
+                            recovered_txn_id = orig_txn.transaction_id
+                    
             if recovered_txn_id:
                 orig_txn = db.query(Transaction).filter(Transaction.transaction_id == recovered_txn_id).first()
                 if orig_txn:
                     orig_txn.recovery_status = "RECOVERED"
                     orig_txn.recovered_amount = payment_entity.get("amount")
-                    orig_txn.recovered_at = datetime.utcnow()
+                    orig_txn.recovered_at = datetime.now(timezone.utc)
                     
                     # Find attempt
                     attempt = db.query(RecoveryAttempt).filter(RecoveryAttempt.transaction_id == orig_txn.id).order_by(RecoveryAttempt.id.desc()).first()

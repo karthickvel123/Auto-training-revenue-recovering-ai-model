@@ -23,6 +23,7 @@ def execute_recovery(transaction: Transaction, strategy: str, customer_message: 
             # Create a payment link
             ref_id = f"recovery_{transaction.transaction_id}_{int(time.time())}"
             expire_by = int(time.time()) + (24 * 60 * 60) # 24 hours
+            notes = {"recovery_for": transaction.transaction_id}
             link_res = client.create_payment_link(
                 amount=transaction.amount,
                 currency=transaction.currency,
@@ -31,10 +32,12 @@ def execute_recovery(transaction: Transaction, strategy: str, customer_message: 
                 customer_contact=transaction.customer_contact,
                 reference_id=ref_id,
                 expire_by=expire_by,
-                callback_url=None
+                callback_url=None,
+                notes=notes
             )
             attempt.payment_link_id = link_res.get("id")
             attempt.payment_link_url = link_res.get("short_url")
+            attempt.recovery_order_id = link_res.get("id")
             attempt.status = "PENDING"
             transaction.recovery_status = "IN_PROGRESS"
             transaction.recovery_attempt_count += 1
@@ -74,6 +77,7 @@ def execute_recovery(transaction: Transaction, strategy: str, customer_message: 
             desc = "Alternative Payment (UPI/Netbanking Recommended)"
             if customer_message:
                 desc = customer_message[:2048]
+            notes = {"recovery_for": transaction.transaction_id}
             link_res = client.create_payment_link(
                 amount=transaction.amount,
                 currency=transaction.currency,
@@ -82,10 +86,12 @@ def execute_recovery(transaction: Transaction, strategy: str, customer_message: 
                 customer_contact=transaction.customer_contact,
                 reference_id=ref_id,
                 expire_by=expire_by,
-                callback_url=None
+                callback_url=None,
+                notes=notes
             )
             attempt.payment_link_id = link_res.get("id")
             attempt.payment_link_url = link_res.get("short_url")
+            attempt.recovery_order_id = link_res.get("id")
             attempt.status = "PENDING"
             transaction.recovery_status = "IN_PROGRESS"
             transaction.recovery_attempt_count += 1

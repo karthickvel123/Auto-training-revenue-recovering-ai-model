@@ -330,3 +330,92 @@ def save_config(config: ConfigUpdateRequest):
             
     get_settings.cache_clear()
     return {"status": "saved"}
+
+
+@router.post("/api/seed-demo-data")
+def seed_demo_data(db: Session = Depends(get_db)):
+    """Seed 50 historical transactions with realistic failure patterns for demo."""
+    import random
+    import time as _time
+    from backend.models import Transaction, StrategyStats
+    from datetime import datetime, timedelta, timezone
+
+    failure_scenarios = [
+        {"error_code": "BAD_REQUEST_ERROR", "error_reason": "insufficient_funds", "category": "customer_action", "strategy": "payment_link", "success_rate": 0.45},
+        {"error_code": "BAD_REQUEST_ERROR", "error_reason": "expired_card", "category": "permanent", "strategy": "stop", "success_rate": 0.0},
+        {"error_code": "GATEWAY_ERROR", "error_reason": "network_error", "category": "temporary", "strategy": "delayed_retry", "success_rate": 0.65},
+        {"error_code": "BAD_REQUEST_ERROR", "error_reason": "wrong_otp", "category": "customer_action", "strategy": "payment_link", "success_rate": 0.55},
+        {"error_code": "SERVER_ERROR", "error_reason": "gateway_error", "category": "temporary", "strategy": "delayed_retry", "success_rate": 0.70},
+        {"error_code": "BAD_REQUEST_ERROR", "error_reason": "card_declined", "category": "customer_action", "strategy": "alternative_payment_method", "success_rate": 0.35},
+        {"error_code": "BAD_REQUEST_ERROR", "error_reason": "suspected_fraud", "category": "security", "strategy": "stop", "success_rate": 0.0},
+        {"error_code": "BAD_REQUEST_ERROR", "error_reason": "authentication_failed", "category": "customer_action", "strategy": "payment_link", "success_rate": 0.40},
+    ]
+
+    created = 0
+    now = datetime.now(timezone.utc)
+    for i in range(50):
+        scenario = random.choice(failure_scenarios)
+        amount = random.choice([10000, 25000, 50000, 75000, 100000, 200000, 500000])
+        days_ago = random.randint(0, 14)
+        hours_ago = random.randint(0, 23)
+        created_at = now - timedelta(days=days_ago, hours=hours_ago)
+
+        txn = Transaction(
+            transaction_id=f"pay_seed_{i}_{int(_time.time())}",
+            order_id=f"order_seed_{i}_{int(_time.time())}",
+            amount=amount,
+            currency="INR",
+            status="FAILED",
+            error_code=scenario["error_code"],
+            error_reason=scenario["error_reason"],
+            error_source="customer",
+            error_step="payment_authorization",
+            customer_email=f"demo{i}@example.com",
+            customer_contact=f"+91999900{i:04d}",
+            payment_method=random.choice(["card", "upi", "netbanking"]),
+            ai_classification={"failure_category": scenario["category"], "confidence": round(random.uniform(0.6, 0.95), 2)},
+            selected_strategy=scenario["strategy"],
+            recovery_status="RECOVERED" if random.random() < scenario["success_rate"] else "FAILED",
+            recovery_attempt_count=random.randint(1, 3),
+            created_at=created_at,
+        )
+        if txn.recovery_status == "RECOVERED":
+            txn.recovered_amount = amount
+            txn.recovered_at = created_at + timedelta(hours=random.randint(1, 12))
+            txn.recovery_strategy = scenario["strategy"]
+        db.add(txn)
+        created += 1
+
+    # Aggregate strategy stats
+    for scenario in failure_scenarios:
+        existing = db.query(StrategyStats).filter(
+            StrategyStats.failure_category == scenario["category"],
+            StrategyStats.error_reason == scenario["error_reason"],
+            StrategyStats.strategy == scenario["strategy"]
+        ).first()
+        if not existing:
+            attempts = random.randint(15, 40)
+            successes = int(attempts * scenario["success_rate"])
+            existing = StrategyStats(
+                failure_category=scenario["category"],
+                error_reason=scenario["error_reason"],
+                strategy=scenario["strategy"],
+                attempts=attempts,
+                successful_recoveries=successes,
+                recovery_rate=scenario["success_rate"],
+                total_amount_attempted=attempts * 50000,
+                total_amount_recovered=successes * 50000,
+            )
+            db.add(existing)
+
+    db.commit()
+    return {"status": "ok", "transactions_seeded": created}
+
+
+@router.post("/api/trigger-escalation")
+def trigger_escalation(db: Session = Depends(get_db)):
+    """Manually trigger the escalation engine to check pending recovery attempts."""
+    from backend.escalation_engine import check_and_escalate
+    check_and_escalate(db)
+    return {"status": "ok", "message": "Escalation check completed"}
+

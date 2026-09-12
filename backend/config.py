@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     database_url: str = "sqlite:///./recovery_agent.db"
     max_retry_count: int = 3
-    high_value_threshold: int = 500000  # paise (5,000 INR)
+    high_value_threshold: int = 1000000  # paise (10,000 INR)
     min_ai_confidence: float = 0.6
     escalation_timeout_minutes: int = 30
     

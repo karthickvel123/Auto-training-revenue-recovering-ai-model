@@ -1,58 +1,120 @@
+"""Tests for the safety gateway — imports and tests the REAL backend.safety_gateway.check_safety."""
 import pytest
+from unittest.mock import patch
+from backend.safety_gateway import check_safety
+from backend.schemas import FailureAnalysis, SafetyVerdict
+from backend.models import Transaction, RecoveryAttempt
 
-class Transaction:
-    def __init__(self, amount, error_reason, failure_category, confidence, strategy, recovery_attempt_count=0, existing_pending=False):
-        self.amount = amount
-        self.error_reason = error_reason
-        self.failure_category = failure_category
-        self.confidence = confidence
-        self.strategy = strategy
-        self.recovery_attempt_count = recovery_attempt_count
-        self.existing_pending = existing_pending
 
-def evaluate_safety(tx: Transaction) -> str:
-    if tx.failure_category == "security" or "fraud" in tx.error_reason.lower():
-        return "blocked"
-    if tx.failure_category == "permanent" and tx.strategy == "payment_link":
-        return "blocked"
-    if tx.recovery_attempt_count >= 3:
-        return "blocked"
-    if tx.amount >= 1000000: # 10,000 INR
-        return "human_review"
-    if tx.confidence < 0.6:
-        return "blocked"
-    if tx.existing_pending:
-        return "blocked"
-    return "allowed"
+def _make_analysis(category="customer_action", strategy="payment_link", confidence=0.9):
+    """Helper to build a FailureAnalysis with defaults."""
+    return FailureAnalysis(
+        failure_category=category,
+        retryability="needs_customer_action",
+        recommended_strategy=strategy,
+        confidence=confidence,
+        reasoning_summary="Test analysis",
+        customer_message="Please retry your payment.",
+    )
 
-def test_security_failure_blocked():
-    tx = Transaction(50000, "unknown", "security", 0.9, "retry")
-    assert evaluate_safety(tx) == "blocked"
 
-def test_permanent_failure_blocked():
-    tx = Transaction(50000, "invalid_card", "permanent", 0.9, "payment_link")
-    assert evaluate_safety(tx) == "blocked"
+# --- Rule 1: Security failures always blocked ---
+def test_security_failure_blocked(security_transaction, db_session):
+    analysis = _make_analysis(category="security", strategy="stop", confidence=0.9)
+    verdict = check_safety(security_transaction, analysis, "payment_link", db_session)
+    assert not verdict.allowed
+    assert verdict.overridden_strategy == "stop"
+    assert "Rule 1" in verdict.rule_triggered
 
-def test_max_retries_exceeded():
-    tx = Transaction(50000, "network_error", "temporary", 0.9, "retry", recovery_attempt_count=3)
-    assert evaluate_safety(tx) == "blocked"
 
-def test_high_value_requires_review():
-    tx = Transaction(2000000, "insufficient_funds", "customer_action", 0.9, "payment_link")
-    assert evaluate_safety(tx) == "human_review"
+# --- Rule 2: Permanent failures blocked for retry/link ---
+def test_permanent_failure_blocked(permanent_transaction, db_session):
+    analysis = _make_analysis(category="permanent", strategy="stop")
+    verdict = check_safety(permanent_transaction, analysis, "payment_link", db_session)
+    assert not verdict.allowed
+    assert verdict.overridden_strategy == "stop"
+    assert "Rule 2" in verdict.rule_triggered
 
-def test_low_confidence_blocked():
-    tx = Transaction(50000, "unknown", "unknown", 0.4, "retry")
-    assert evaluate_safety(tx) == "blocked"
 
-def test_duplicate_nudge_prevented():
-    tx = Transaction(50000, "insufficient_funds", "customer_action", 0.9, "payment_link", existing_pending=True)
-    assert evaluate_safety(tx) == "blocked"
+def test_permanent_failure_allows_stop(permanent_transaction, db_session):
+    analysis = _make_analysis(category="permanent", strategy="stop")
+    verdict = check_safety(permanent_transaction, analysis, "stop", db_session)
+    # stop strategy is not in ("delayed_retry", "payment_link"), so Rule 2 doesn't apply
+    assert verdict.allowed
 
-def test_fraud_keywords_blocked():
-    tx = Transaction(50000, "suspected_fraud", "unknown", 0.9, "retry")
-    assert evaluate_safety(tx) == "blocked"
 
-def test_safe_payment_allowed():
-    tx = Transaction(50000, "insufficient_funds", "customer_action", 0.9, "payment_link")
-    assert evaluate_safety(tx) == "allowed"
+# --- Rule 3: Max retries exceeded ---
+def test_max_retries_blocked(sample_transaction, db_session):
+    sample_transaction.recovery_attempt_count = 3
+    db_session.commit()
+    analysis = _make_analysis()
+    verdict = check_safety(sample_transaction, analysis, "payment_link", db_session)
+    assert not verdict.allowed
+    assert "Rule 3" in verdict.rule_triggered
+
+
+# --- Rule 4: High-value transaction requires human review ---
+def test_high_value_requires_review(high_value_transaction, db_session):
+    analysis = _make_analysis()
+    verdict = check_safety(high_value_transaction, analysis, "payment_link", db_session)
+    assert not verdict.allowed
+    assert verdict.overridden_strategy == "human_review"
+    assert "Rule 4" in verdict.rule_triggered
+
+
+def test_high_value_allows_human_review(high_value_transaction, db_session):
+    analysis = _make_analysis()
+    verdict = check_safety(high_value_transaction, analysis, "human_review", db_session)
+    # human_review is already the strategy, Rule 4 doesn't trigger
+    assert verdict.allowed
+
+
+# --- Rule 5: Low AI confidence ---
+def test_low_confidence_blocked(sample_transaction, db_session):
+    analysis = _make_analysis(confidence=0.4)
+    verdict = check_safety(sample_transaction, analysis, "payment_link", db_session)
+    assert not verdict.allowed
+    assert "Rule 5" in verdict.rule_triggered
+
+
+def test_low_confidence_allows_human_review(sample_transaction, db_session):
+    analysis = _make_analysis(confidence=0.4)
+    verdict = check_safety(sample_transaction, analysis, "human_review", db_session)
+    assert verdict.allowed
+
+
+# --- Rule 6: Duplicate nudge prevention ---
+def test_duplicate_nudge_blocked(sample_transaction, db_session):
+    # Add an active pending recovery attempt
+    attempt = RecoveryAttempt(
+        transaction_id=sample_transaction.id,
+        recovery_type="payment_link",
+        status="PENDING",
+    )
+    db_session.add(attempt)
+    db_session.commit()
+
+    analysis = _make_analysis()
+    verdict = check_safety(sample_transaction, analysis, "payment_link", db_session)
+    assert not verdict.allowed
+    assert "Rule 6" in verdict.rule_triggered
+
+
+# --- Rule 7: Fraud keywords in error text ---
+def test_fraud_keywords_blocked(sample_transaction, db_session):
+    sample_transaction.error_reason = "suspected_fraud"
+    sample_transaction.error_description = "Transaction flagged as suspicious"
+    db_session.commit()
+
+    analysis = _make_analysis()
+    verdict = check_safety(sample_transaction, analysis, "payment_link", db_session)
+    assert not verdict.allowed
+    assert "Rule 7" in verdict.rule_triggered
+
+
+# --- Happy path: all rules pass ---
+def test_safe_payment_allowed(sample_transaction, db_session):
+    analysis = _make_analysis()
+    verdict = check_safety(sample_transaction, analysis, "payment_link", db_session)
+    assert verdict.allowed
+    assert verdict.reason == "All safety checks passed"

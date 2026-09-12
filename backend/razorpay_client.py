@@ -35,7 +35,7 @@ class RazorpayClient:
     def create_payment_link(self, amount: int, currency: str, description: str,
                            customer_email: str = None, customer_contact: str = None,
                            reference_id: str = None, expire_by: int = None,
-                           callback_url: str = None) -> dict:
+                           callback_url: str = None, notes: dict = None) -> dict:
         """Create a real Razorpay payment link with graceful fallback."""
         data = {
             "amount": amount,
@@ -47,6 +47,8 @@ class RazorpayClient:
             data["reference_id"] = reference_id
         if expire_by:
             data["expire_by"] = expire_by
+        if notes:
+            data["notes"] = notes
         customer = {}
         if customer_email:
             customer["email"] = customer_email

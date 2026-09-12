@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import streamlit.components.v1 as components
 import requests
@@ -14,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000")
 
 st.title("🔄 Adaptive Revenue Recovery Agent")
 st.caption("Fintech-grade payment recovery agent: AI failure reasoning + deterministic safety gateway + outcome-driven learning")
@@ -301,6 +302,30 @@ with tab1:
     else:
         st.info("No active demo session. Create an order above to watch the pipeline execute live.")
 
+    st.divider()
+    st.subheader("4. Complete Recovery Simulation")
+    st.write("Simulate payment completion on the recovery link (updates learning engine and closes loop):")
+    manual_cols = st.columns([2, 1])
+    with manual_cols[0]:
+        manual_order_id = st.text_input("Order ID to complete recovery for", value=st.session_state.get("demo_order_id", ""), key="manual_rec_order")
+    with manual_cols[1]:
+        st.write("")
+        if st.button("🎉 Mark as Successfully Recovered", type="primary", use_container_width=True):
+            if manual_order_id:
+                try:
+                    rec_res = requests.post(f"{API_URL}/api/trigger-recovery-success", params={"order_id": manual_order_id}, timeout=10)
+                    if rec_res.status_code == 200:
+                        st.success("Transaction marked RECOVERED! Adaptive learning engine updated.")
+                        st.balloons()
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Failed: {rec_res.text}")
+                except Exception as e:
+                    st.error(f"Error: {e}")
+            else:
+                st.warning("Please enter or generate an Order ID first.")
+
 # ==========================================
 # TAB 2: TRANSACTIONS
 # ==========================================
@@ -435,7 +460,20 @@ with tab4:
                 )
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                st.info("No historical strategy statistics yet. Run demo recoveries to observe the learning loop update in real-time.")
+                st.info("No historical strategy statistics yet. Run demo recoveries to observe the learning loop update in real-time, or seed demo data below.")
+
+            st.markdown("---")
+            if st.button("🌱 Seed Demo Data (50 Realistic Transactions & Strategy Stats)", use_container_width=True):
+                try:
+                    seed_res = requests.post(f"{API_URL}/api/seed-demo-data", timeout=15)
+                    if seed_res.status_code == 200:
+                        st.success("Successfully seeded 50 historical transactions and strategy benchmarks! Refreshing...")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Failed to seed: {seed_res.text}")
+                except Exception as e:
+                    st.error(f"Error seeding demo data: {e}")
     except Exception as e:
         st.error(f"Could not load strategy performance: {e}")
 
@@ -529,6 +567,15 @@ with tab6:
         st.error(f"Could not load audit log: {e}")
 
 if auto_refresh:
-    time.sleep(10)
-    st.rerun()
+    components.html(
+        """
+        <script>
+        setTimeout(function(){
+            window.parent.location.reload();
+        }, 10000);
+        </script>
+        """,
+        height=0,
+    )
+
 

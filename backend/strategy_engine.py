@@ -47,9 +47,11 @@ def select_strategy(transaction: Transaction, analysis: FailureAnalysis, db: Ses
     # Apply hard constraints based on failure category
     if analysis.failure_category in ("security", "permanent"):
         selected_strategy = "stop"
+        data_driven = False
         override_reason = "Constraint: Stop for security/permanent failures."
     elif selected_strategy == "delayed_retry" and analysis.failure_category != "temporary":
         selected_strategy = "payment_link"
+        data_driven = False
         override_reason = "Constraint: Delayed retry only for temporary failures."
 
     logger.info(f"Strategy selected: {selected_strategy} (Data driven: {data_driven})")
