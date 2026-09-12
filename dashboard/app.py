@@ -17,6 +17,26 @@ st.set_page_config(
 
 API_URL = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000")
 
+# Auto-start FastAPI backend if running locally and not yet active
+def _ensure_backend():
+    try:
+        r = requests.get(f"{API_URL}/api/health", timeout=1)
+        if r.status_code == 200:
+            return
+    except Exception:
+        pass
+    if "127.0.0.1" in API_URL or "localhost" in API_URL:
+        try:
+            import subprocess
+            import sys
+            cmd = [sys.executable, "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", "8000"]
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(2)
+        except Exception:
+            pass
+
+_ensure_backend()
+
 st.title("🔄 Adaptive Revenue Recovery Agent")
 st.caption("Fintech-grade payment recovery agent: AI failure reasoning + deterministic safety gateway + outcome-driven learning")
 
@@ -125,7 +145,8 @@ if metrics:
     st.divider()
 
 # Tabs
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab_store, tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "⚡ VoltStore Customer Storefront",
     "🔴 Live Demo & Simulation", 
     "📋 Transactions", 
     "🔍 Transaction Detail", 
@@ -133,6 +154,20 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "🔥 Failure Analytics & Insights", 
     "📝 Agent Audit Log"
 ])
+
+# ==========================================
+# TAB: VOLTSTORE CUSTOMER STOREFRONT
+# ==========================================
+with tab_store:
+    st.header("⚡ VoltStore Customer Experience")
+    st.caption("Live consumer shopping cart with real Razorpay checkout.js and floating AI recovery banner.")
+    store_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend", "static", "store.html")
+    if os.path.exists(store_path):
+        with open(store_path, "r", encoding="utf-8") as f:
+            store_html = f.read()
+        components.html(store_html, height=880, scrolling=True)
+    else:
+        st.info("Storefront available directly on http://localhost:8000/")
 
 # ==========================================
 # TAB 1: LIVE DEMO & SIMULATION
