@@ -40,6 +40,22 @@ _ensure_backend()
 st.title("🔄 Adaptive Revenue Recovery Agent")
 st.caption("Fintech-grade payment recovery agent: AI failure reasoning + deterministic safety gateway + outcome-driven learning")
 
+# Remove "Made with Streamlit" footer and header branding
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden; display: none !important;}
+    footer {visibility: hidden; display: none !important;}
+    header {visibility: hidden; display: none !important;}
+    .viewerBadge_container__1QSob {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+    [data-testid="manage-app-button"] {display: none !important;}
+    .styles_viewerBadge__CvC9N {display: none !important;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Sidebar
 st.sidebar.title("⚙️ Controls & Setup")
 
